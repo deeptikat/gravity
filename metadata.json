@@ -1,0 +1,6 @@
+{
+  "name": "How Newton Explained Gravity",
+  "description": "An interactive animated storybook and museum exhibit chronicling Sir Isaac Newton's discovery of universal gravitation through scroll-driven physics, celestial mechanics, and historical manuscripts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
