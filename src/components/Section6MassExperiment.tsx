@@ -1,15 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Sliders, Play, RotateCcw, ArrowRight, ArrowLeft, Scale } from 'lucide-react';
-import { playAppleDropSound } from '../utils/audio';
+import { ArrowRight, ArrowLeft, Scale } from 'lucide-react';
 
-export default function Section6MassExperiment() {
-  const [massApple, setMassApple] = useState<number>(1); // 1 to 10
-  const [massBoulder, setMassBoulder] = useState<number>(8); // 1 to 20
-  const [isSimulatingTug, setIsSimulatingTug] = useState<boolean>(false);
-  const [offsetA, setOffsetA] = useState<number>(0);
-  const [offsetB, setOffsetB] = useState<number>(0);
-  const animRef = useRef<number | null>(null);
+interface Section6MassExperimentProps {
+  scrollProgress: number;
+}
+
+export default function Section6MassExperiment({ scrollProgress }: Section6MassExperimentProps) {
+  const massApple = 1 + Math.round(scrollProgress * 4);
+  const massBoulder = 8 + Math.round(scrollProgress * 8);
+  const offsetA = scrollProgress * 80;
+  const offsetB = scrollProgress * 12;
 
   // Force is proportional to m1 * m2
   const combinedForceUnits = massApple * massBoulder;
@@ -17,62 +16,6 @@ export default function Section6MassExperiment() {
   const visualForceRatio = combinedForceUnits / (10 * 20); // 0.005 to 1.0
   const arrowWidth = Math.max(18, visualForceRatio * 110);
   const arrowThickness = Math.max(2, visualForceRatio * 7);
-
-  // Simulation: Tug towards center of mass (barycenter)
-  const startTugSimulation = () => {
-    if (isSimulatingTug) return;
-    setIsSimulatingTug(true);
-    playAppleDropSound();
-
-    let curA = 0;
-    let curB = 0;
-    let velA = 0;
-    let velB = 0;
-
-    const step = () => {
-      // a = F / m -> Smaller mass experiences much higher acceleration!
-      const accelA = (combinedForceUnits * 0.04) / massApple;
-      const accelB = (combinedForceUnits * 0.04) / massBoulder;
-
-      velA += accelA;
-      velB += accelB;
-
-      curA += velA;
-      curB += velB;
-
-      const totalDisplacement = curA + curB;
-      const maxSpan = 160; // distance to meet
-
-      if (totalDisplacement >= maxSpan) {
-        // Adjust to exact collision
-        const ratioA = velA / (velA + velB);
-        setOffsetA(maxSpan * ratioA);
-        setOffsetB(maxSpan * (1 - ratioA));
-        setIsSimulatingTug(false);
-        playAppleDropSound();
-        return;
-      }
-
-      setOffsetA(curA);
-      setOffsetB(curB);
-      animRef.current = requestAnimationFrame(step);
-    };
-
-    animRef.current = requestAnimationFrame(step);
-  };
-
-  const resetTug = () => {
-    if (animRef.current) cancelAnimationFrame(animRef.current);
-    setIsSimulatingTug(false);
-    setOffsetA(0);
-    setOffsetB(0);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, []);
 
   return (
     <section
@@ -86,10 +29,10 @@ export default function Section6MassExperiment() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E5DCcb] border border-[#CDBE9F] text-xs font-serif uppercase tracking-widest text-[#8C6218]">
               <span>Chapter VI</span>
               <span>•</span>
-              <span>Interactive Laboratory</span>
+              <span>Newton’s Insight</span>
             </div>
             <h2 className="mt-2 font-heading text-2xl sm:text-4xl text-[#24211E] font-bold">
-              EXPERIMENT 2: MASS & MUTUAL ATTRACTION
+              TWO BODIES, ONE MUTUAL PULL
             </h2>
             <p className="font-serif italic text-sm sm:text-base text-[#685C4F]">
               “More mass → stronger gravitational attraction.”
@@ -131,7 +74,7 @@ export default function Section6MassExperiment() {
               className="relative flex flex-col items-center z-20 transition-transform"
               style={{
                 transform: `translateX(${offsetA}px)`,
-                transition: isSimulatingTug ? 'none' : 'transform 0.15s ease-out',
+                transition: 'transform 0.15s ease-out',
               }}
             >
               {/* Apple Visual Scaling with Mass */}
@@ -185,7 +128,7 @@ export default function Section6MassExperiment() {
               className="relative flex flex-col items-center z-20 transition-transform"
               style={{
                 transform: `translateX(${-offsetB}px)`,
-                transition: isSimulatingTug ? 'none' : 'transform 0.15s ease-out',
+                transition: 'transform 0.15s ease-out',
               }}
             >
               {/* Force Arrow on Boulder pulling toward Apple */}
@@ -231,79 +174,9 @@ export default function Section6MassExperiment() {
           </div>
         </div>
 
-        {/* Dual Sliders and Control Panel */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center p-6 rounded-2xl bg-[#FAF7F0] border border-[#D5C6AA] shadow-xs">
-          {/* Slider 1: Apple Mass */}
-          <div className="md:col-span-4 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label htmlFor="apple-slider" className="text-xs font-heading font-bold text-[#24211E]">
-                MASS OF APPLE (m₁)
-              </label>
-              <span className="font-mono text-xs text-[#8C6218] bg-[#EDE4D0] px-2 py-0.5 rounded">
-                {massApple} kg
-              </span>
-            </div>
-            <input
-              id="apple-slider"
-              type="range"
-              min="1"
-              max="10"
-              value={massApple}
-              disabled={isSimulatingTug}
-              onChange={(e) => {
-                setMassApple(parseInt(e.target.value));
-                setOffsetA(0);
-                setOffsetB(0);
-              }}
-              className="w-full h-2 bg-[#DED1BA] rounded-lg appearance-none cursor-pointer accent-[#8C6218]"
-            />
-          </div>
-
-          {/* Slider 2: Boulder Mass */}
-          <div className="md:col-span-4 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label htmlFor="boulder-slider" className="text-xs font-heading font-bold text-[#24211E]">
-                MASS OF BOULDER (m₂)
-              </label>
-              <span className="font-mono text-xs text-[#8C6218] bg-[#EDE4D0] px-2 py-0.5 rounded">
-                {massBoulder * 10} kg
-              </span>
-            </div>
-            <input
-              id="boulder-slider"
-              type="range"
-              min="2"
-              max="20"
-              value={massBoulder}
-              disabled={isSimulatingTug}
-              onChange={(e) => {
-                setMassBoulder(parseInt(e.target.value));
-                setOffsetA(0);
-                setOffsetB(0);
-              }}
-              className="w-full h-2 bg-[#DED1BA] rounded-lg appearance-none cursor-pointer accent-[#8C6218]"
-            />
-          </div>
-
-          {/* Simulation Trigger */}
-          <div className="md:col-span-4 flex gap-2">
-            <button
-              onClick={startTugSimulation}
-              disabled={isSimulatingTug}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-[#24211E] text-[#F8F5EE] hover:bg-[#3B352F] disabled:opacity-50 transition-all font-semibold text-xs flex items-center justify-center gap-1.5 shadow-xs"
-            >
-              <Play className="w-3.5 h-3.5 text-[#D4AF37] fill-current" />
-              <span>Simulate Attraction</span>
-            </button>
-
-            <button
-              onClick={resetTug}
-              className="py-2.5 px-3 rounded-xl border border-[#D0C2A4] bg-[#FAF5E8] text-[#635544] hover:bg-[#F2E8D5] transition-all text-xs flex items-center justify-center"
-              title="Reset"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-          </div>
+        <div className="p-5 rounded-2xl bg-[#FAF7F0] border border-[#D5C6AA] shadow-xs text-sm text-[#486581]">
+          <span className="font-heading font-bold text-[#102A43]">Both bodies pull on each other.</span>{' '}
+          As you scroll, the lighter apple moves more while the larger body barely shifts.
         </div>
       </div>
     </section>

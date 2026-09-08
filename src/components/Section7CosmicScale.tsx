@@ -14,10 +14,11 @@ export default function Section7CosmicScale({ scrollProgress }: Section7CosmicSc
 
   const stageIndex = Math.min(3, Math.floor(scrollProgress * 4));
 
-  const text1Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.1) / 0.25));
-  const text2Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.35) / 0.25));
-  const text3Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.6) / 0.25));
-  const text4Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.8) / 0.2));
+  // Reveal the whole thought early, then keep it readable while the cosmic scene evolves.
+  const text1Opacity = Math.min(1, scrollProgress / 0.12);
+  const text2Opacity = Math.min(1, scrollProgress / 0.16);
+  const text3Opacity = Math.min(1, scrollProgress / 0.2);
+  const text4Opacity = Math.min(1, scrollProgress / 0.24);
 
   // Zoom scale factor of the celestial canvas
   const zoomFactor = 1 + scrollProgress * 2.8;
@@ -25,7 +26,7 @@ export default function Section7CosmicScale({ scrollProgress }: Section7CosmicSc
   return (
     <section
       id="cosmic"
-      className="relative min-h-[190vh] w-full bg-[#0B0D17] text-[#F8F5EE] overflow-hidden cosmic-gradient border-t border-[#1C2337]"
+      className="relative min-h-[145vh] w-full bg-[#0B0D17] text-[#F8F5EE] overflow-hidden cosmic-gradient border-t border-[#1C2337]"
     >
       {/* Background Deep Space Starfield & Cosmic Nebula */}
       <div className="absolute inset-0 space-star-field opacity-90 pointer-events-none" />

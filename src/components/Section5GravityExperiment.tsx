@@ -1,13 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Play, RotateCcw, Sliders, ArrowLeft, ArrowRight, Activity } from 'lucide-react';
-import { playAppleDropSound } from '../utils/audio';
+import { ArrowLeft, Activity } from 'lucide-react';
 
-export default function Section5GravityExperiment() {
-  const [distanceMultiplier, setDistanceMultiplier] = useState<number>(1.5); // 1 to 4
-  const [isSimulatingDrop, setIsSimulatingDrop] = useState<boolean>(false);
-  const [dropPosition, setDropPosition] = useState<number | null>(null);
-  const animationRef = useRef<number | null>(null);
+interface Section5GravityExperimentProps {
+  scrollProgress: number;
+}
+
+export default function Section5GravityExperiment({ scrollProgress }: Section5GravityExperimentProps) {
+  const distanceMultiplier = 1 + scrollProgress * 3;
 
   // Force calculation: F = 1 / (d^2)
   const relativeForce = 1 / (distanceMultiplier * distanceMultiplier);
@@ -21,50 +19,8 @@ export default function Section5GravityExperiment() {
   const arrowLength = Math.max(16, relativeForce * 90);
   const arrowStrokeWidth = Math.max(1.5, relativeForce * 5.5);
 
-  const startDropSimulation = () => {
-    if (isSimulatingDrop) return;
-    setIsSimulatingDrop(true);
-    playAppleDropSound();
-
-    let pos = currentPixelDistance;
-    let velocity = 0;
-    const earthSurface = 50; // stop at Earth radius
-
-    const step = () => {
-      // Acceleration increases as object gets closer (inverse square!)
-      const currDistRatio = Math.max(0.7, pos / baseDistance);
-      const accel = 0.5 / (currDistRatio * currDistRatio);
-      velocity += accel;
-      pos -= velocity;
-
-      if (pos <= earthSurface) {
-        setDropPosition(earthSurface);
-        setIsSimulatingDrop(false);
-        playAppleDropSound();
-        return;
-      }
-
-      setDropPosition(pos);
-      animationRef.current = requestAnimationFrame(step);
-    };
-
-    animationRef.current = requestAnimationFrame(step);
-  };
-
-  const resetDrop = () => {
-    if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    setIsSimulatingDrop(false);
-    setDropPosition(null);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, []);
-
-  const displayDistance = dropPosition !== null ? (dropPosition / baseDistance).toFixed(2) : distanceMultiplier.toFixed(1);
-  const activeDistanceX = dropPosition !== null ? dropPosition : currentPixelDistance;
+  const displayDistance = distanceMultiplier.toFixed(1);
+  const activeDistanceX = currentPixelDistance;
 
   return (
     <section
@@ -78,10 +34,10 @@ export default function Section5GravityExperiment() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EDE3D0] border border-[#D3C19F] text-xs font-serif uppercase tracking-widest text-[#8C6218]">
               <span>Chapter V</span>
               <span>•</span>
-              <span>Interactive Laboratory</span>
+              <span>Newton’s Insight</span>
             </div>
             <h2 className="mt-2 font-heading text-2xl sm:text-4xl text-[#24211E] font-bold">
-              EXPERIMENT 1: DISTANCE & INVERSE-SQUARE
+              THE PULL FADES WITH DISTANCE
             </h2>
             <p className="font-serif italic text-sm sm:text-base text-[#685C4F]">
               Directly manipulate the separation between Earth and an object to witness how gravity dilutes across space.
@@ -190,10 +146,10 @@ export default function Section5GravityExperiment() {
 
             {/* The Movable Test Object (Apple or Satellite) */}
             <div
-              className="absolute z-20 flex flex-col items-center transition-all cursor-grab active:cursor-grabbing"
+                className="absolute z-20 flex flex-col items-center transition-all"
               style={{
                 left: `calc(40px + ${activeDistanceX}px)`,
-                transition: isSimulatingDrop ? 'none' : 'left 0.15s ease-out',
+                transition: 'left 0.15s ease-out',
               }}
             >
               {/* Dynamic Force Arrow Vector on Object */}
@@ -248,62 +204,9 @@ export default function Section5GravityExperiment() {
           </div>
         </div>
 
-        {/* User Interactive Controls Panel */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center p-6 rounded-2xl bg-[#FAF7F0] border border-[#D8C9AE] shadow-xs">
-          {/* Distance Slider */}
-          <div className="md:col-span-8 space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="dist-slider" className="flex items-center gap-2 text-sm font-heading font-bold text-[#24211E]">
-                <Sliders className="w-4 h-4 text-[#B48325]" />
-                <span>SLIDER: DISTANCE FROM EARTH</span>
-              </label>
-              <span className="font-mono text-sm font-bold text-[#8C6218] bg-[#EDE4D0] px-2.5 py-0.5 rounded border border-[#D5C5A5]">
-                {distanceMultiplier.toFixed(1)}× radius
-              </span>
-            </div>
-
-            <input
-              id="dist-slider"
-              type="range"
-              min="1.0"
-              max="4.0"
-              step="0.1"
-              value={distanceMultiplier}
-              disabled={isSimulatingDrop}
-              onChange={(e) => {
-                setDistanceMultiplier(parseFloat(e.target.value));
-                setDropPosition(null);
-              }}
-              className="w-full h-2.5 bg-[#DED1BA] rounded-lg appearance-none cursor-pointer accent-[#8C6218]"
-            />
-
-            <div className="flex justify-between text-xs font-serif italic text-[#786957]">
-              <span>1× (At Surface)</span>
-              <span>2× (Quarter Force)</span>
-              <span>3× (Ninth Force)</span>
-              <span>4× (Sixteenth Force)</span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="md:col-span-4 flex flex-col sm:flex-row md:flex-col gap-2.5">
-            <button
-              onClick={startDropSimulation}
-              disabled={isSimulatingDrop}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#24211E] text-[#F8F5EE] hover:bg-[#3B352F] disabled:opacity-50 transition-all font-semibold text-xs flex items-center justify-center gap-2 shadow-xs"
-            >
-              <Play className="w-4 h-4 text-[#D4AF37] fill-current" />
-              <span>Release & Free Fall</span>
-            </button>
-
-            <button
-              onClick={resetDrop}
-              className="w-full py-2 px-4 rounded-xl border border-[#D0C2A4] bg-[#FAF5E8] text-[#635544] hover:bg-[#F2E8D5] transition-all text-xs flex items-center justify-center gap-2"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Position</span>
-            </button>
-          </div>
+        <div className="p-5 rounded-2xl bg-[#FAF7F0] border border-[#D8C9AE] shadow-xs text-sm text-[#486581]">
+          <span className="font-heading font-bold text-[#102A43]">As the story moves outward, the pull fades.</span>{' '}
+          Scroll back and forth to watch the apple travel through the scene; no controls are needed.
         </div>
       </div>
     </section>

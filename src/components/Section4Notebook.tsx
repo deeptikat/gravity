@@ -20,12 +20,12 @@ export default function Section4Notebook({ scrollProgress }: Section4NotebookPro
   // 0.85 -> 1.0: Full equation complete with gold illuminations
 
   const notebookScale = 0.85 + Math.min(0.2, scrollProgress * 0.25);
-  const showProportionality = scrollProgress > 0.15;
-  const showF = scrollProgress > 0.35;
-  const showMasses = scrollProgress > 0.48;
-  const showRadius = scrollProgress > 0.62;
-  const showG = scrollProgress > 0.74;
-  const isComplete = scrollProgress > 0.82;
+  const showProportionality = scrollProgress > 0.08;
+  const showF = scrollProgress > 0.18;
+  const showMasses = scrollProgress > 0.28;
+  const showRadius = scrollProgress > 0.38;
+  const showG = scrollProgress > 0.48;
+  const isComplete = scrollProgress > 0.58;
 
   const handleComponentClick = (comp: string) => {
     setActiveComponent(comp);
@@ -62,7 +62,7 @@ export default function Section4Notebook({ scrollProgress }: Section4NotebookPro
   return (
     <section
       id="notebook"
-      className="relative min-h-[170vh] w-full bg-[#FAF6EE] text-[#24211E] overflow-hidden parchment-texture border-t border-[#E2D8C3]"
+      className="relative min-h-[135vh] w-full bg-[#FAF6EE] text-[#24211E] overflow-hidden parchment-texture border-t border-[#E2D8C3]"
     >
       <div className="sticky top-0 h-screen w-full max-w-7xl mx-auto px-4 sm:px-8 flex flex-col justify-between py-12">
         {/* Section Header */}

@@ -21,10 +21,11 @@ export default function Section2NewtonQuestion({ scrollProgress }: Section2Newto
   const quillMoveY = Math.cos(scrollProgress * Math.PI * 4) * 10;
 
   // Newton head tilt angle from looking down at apple (0°) to looking up at the sky (30°)
-  const headAngle = Math.min(28, Math.max(0, (scrollProgress - 0.3) * 60));
+  const headAngle = Math.min(28, Math.max(0, (scrollProgress - 0.12) * 60));
+  const appleDeskArrival = Math.min(1, scrollProgress / 0.28);
 
-  const thoughtOpacity = Math.min(1, Math.max(0, (scrollProgress - 0.35) / 0.3));
-  const question2Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.6) / 0.3));
+  const thoughtOpacity = Math.min(1, Math.max(0, (scrollProgress - 0.18) / 0.22));
+  const question2Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.42) / 0.22));
 
   const triggerSound = () => {
     if (!interacted) {
@@ -38,7 +39,7 @@ export default function Section2NewtonQuestion({ scrollProgress }: Section2Newto
     <section
       id="question"
       onMouseEnter={triggerSound}
-      className="relative min-h-[160vh] w-full bg-[#EFE9DC] text-[#24211E] overflow-hidden parchment-texture border-t border-[#DED4C1]"
+      className="relative min-h-[125vh] w-full bg-[#EFE9DC] text-[#24211E] overflow-hidden parchment-texture border-t border-[#DED4C1]"
     >
       <div className="sticky top-0 h-screen w-full max-w-7xl mx-auto px-4 sm:px-8 flex flex-col justify-between py-14">
         {/* Chapter Header */}
@@ -50,10 +51,10 @@ export default function Section2NewtonQuestion({ scrollProgress }: Section2Newto
               <span>The Audacious Leap</span>
             </div>
             <h2 className="mt-2 font-heading text-2xl sm:text-4xl text-[#24211E] font-bold">
-              THE CONTEMPLATION AT WOOLSTHORPE
+              ISAAC NEWTON’S QUESTION
             </h2>
             <p className="font-serif italic text-sm text-[#685C4F]">
-              Is the reach of the Earth confined only to its trees?
+              The young Newton watches the apple, then asks whether Earth’s pull reaches the Moon.
             </p>
           </div>
 
@@ -65,6 +66,10 @@ export default function Section2NewtonQuestion({ scrollProgress }: Section2Newto
 
         {/* The Newton's Table & Thinking Figure Scene */}
         <div className="relative w-full h-[400px] sm:h-[460px] my-auto flex items-center justify-center">
+          <div className="absolute left-4 top-2 z-20 max-w-[220px] border-l-2 border-[#102A43] pl-3 pointer-events-none">
+            <p className="font-heading text-[10px] tracking-[0.2em] text-[#102A43]">ISAAC NEWTON</p>
+            <p className="mt-1 text-xs leading-relaxed text-[#486581]">A question becomes a universal law.</p>
+          </div>
           {/* Historical Study Backdrop with window showing night sky */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             {/* Arched Window to nocturnal orchard & emerging Moon */}
@@ -119,7 +124,7 @@ export default function Section2NewtonQuestion({ scrollProgress }: Section2Newto
               <path d="M 112 340 L 528 340" stroke="#25170D" strokeWidth="6" />
 
               {/* Apple resting on desk near Newton */}
-              <g transform="translate(180, 240)">
+              <g transform={`translate(180, ${120 + appleDeskArrival * 120})`}>
                 <ellipse cx="14" cy="24" rx="14" ry="4" fill="#291B10" opacity="0.4" />
                 <circle cx="14" cy="16" r="12" fill="#D9281C" />
                 <path d="M 14 5 C 16 1, 20 0, 22 0" stroke="#4B3322" strokeWidth="2" fill="none" />

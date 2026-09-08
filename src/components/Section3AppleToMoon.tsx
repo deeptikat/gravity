@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Play, RotateCcw, Compass, ArrowDownRight, MoveRight, ArrowDown } from 'lucide-react';
-import { playCelestialHum } from '../utils/audio';
+import { Compass, ArrowDownRight, MoveRight, ArrowDown } from 'lucide-react';
 
 interface Section3AppleToMoonProps {
   scrollProgress: number; // 0 to 1
@@ -9,8 +7,6 @@ interface Section3AppleToMoonProps {
 
 export default function Section3AppleToMoon({ scrollProgress }: Section3AppleToMoonProps) {
   // Interactive Newton's Cannon Thought Experiment
-  const [cannonVelocity, setCannonVelocity] = useState<number>(7.9); // km/s
-  const [isFiring, setIsFiring] = useState<boolean>(false);
 
   // Scroll phase calculations
   // 0.0 -> 0.4: Zooming out from Newton/orchard to planetary Earth
@@ -33,20 +29,12 @@ export default function Section3AppleToMoon({ scrollProgress }: Section3AppleToM
   const appleOpacity = Math.max(0.4, 1 - zoomProgress * 0.5);
 
   const vectorsOpacity = Math.min(1, Math.max(0, (scrollProgress - 0.4) / 0.3));
-  const textConclusionOpacity = Math.min(1, Math.max(0, (scrollProgress - 0.6) / 0.3));
-
-  const handleCannonFire = () => {
-    setIsFiring(false);
-    setTimeout(() => {
-      setIsFiring(true);
-      playCelestialHum();
-    }, 50);
-  };
+  const textConclusionOpacity = Math.min(1, Math.max(0, (scrollProgress - 0.42) / 0.22));
 
   return (
     <section
       id="moon"
-      className="relative min-h-[180vh] w-full bg-[#121522] text-[#F8F5EE] overflow-hidden cosmic-gradient border-t border-[#262D42]"
+      className="relative min-h-[135vh] w-full bg-[#102A43] text-[#F8F5EE] overflow-hidden cosmic-gradient border-t border-[#262D42]"
     >
       {/* Background Starfield */}
       <div className="absolute inset-0 space-star-field opacity-80 pointer-events-none" />
@@ -256,72 +244,20 @@ export default function Section3AppleToMoon({ scrollProgress }: Section3AppleToM
             </p>
           </div>
 
-          {/* Interactive Newton's Cannon Simulator */}
+          {/* Newton's cannon thought experiment, revealed by scrolling */}
           <div className="lg:col-span-5 p-4 rounded-xl bg-[#171D2E] border border-[#374462] shadow-xl">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-heading font-bold text-[#D4AF37] uppercase tracking-wider">
                 Newton's Mountain Cannon
               </span>
               <span className="font-mono text-xs text-white bg-[#0B0F1A] px-2 py-0.5 rounded border border-[#2A344C]">
-                {cannonVelocity} km/s
+                7.9 km/s
               </span>
             </div>
 
-            {/* Velocity Slider */}
-            <div className="space-y-1.5">
-              <input
-                type="range"
-                min="0"
-                max="12"
-                step="0.1"
-                value={cannonVelocity}
-                onChange={(e) => {
-                  setCannonVelocity(parseFloat(e.target.value));
-                  setIsFiring(false);
-                }}
-                className="w-full h-1.5 bg-[#2A354C] rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
-              />
-              <div className="flex justify-between text-[10px] font-mono text-[#8C9BB8]">
-                <span>0 (Drop)</span>
-                <span>4.0 (Arc)</span>
-                <span className="text-[#D4AF37] font-semibold">7.9 (Orbit)</span>
-                <span className="text-emerald-400 font-semibold">11.2 (Escape)</span>
-              </div>
-            </div>
-
-            {/* Trajectory description */}
             <div className="mt-3 p-2.5 rounded-lg bg-[#0E121E] border border-[#2A3348] text-xs">
-              {cannonVelocity < 5 ? (
-                <p className="text-red-300">
-                  <span className="font-bold">Sub-orbital:</span> Projectile hits Earth after a parabolic path.
-                </p>
-              ) : cannonVelocity < 7.8 ? (
-                <p className="text-amber-300">
-                  <span className="font-bold">Long range:</span> Curves across continents, but still impacts.
-                </p>
-              ) : cannonVelocity <= 8.5 ? (
-                <p className="text-emerald-300">
-                  <span className="font-bold">Circular Orbit!</span> The rate of fall matches Earth's curvature.
-                </p>
-              ) : cannonVelocity < 11.2 ? (
-                <p className="text-cyan-300">
-                  <span className="font-bold">Elliptical Orbit:</span> High orbital apogee into deep space.
-                </p>
-              ) : (
-                <p className="text-purple-300">
-                  <span className="font-bold">Escape Velocity:</span> Breaks Earth's gravity entirely!
-                </p>
-              )}
+              <p className="text-cyan-200"><span className="font-bold">At orbital speed:</span> the cannonball falls around Earth instead of striking it.</p>
             </div>
-
-            {/* Test Fire Button */}
-            <button
-              onClick={handleCannonFire}
-              className="mt-2.5 w-full py-1.5 px-3 rounded-lg bg-gradient-to-r from-[#B48325] to-[#D4AF37] text-[#121522] font-semibold text-xs flex items-center justify-center gap-1.5 hover:brightness-110 active:scale-[0.99] transition-all"
-            >
-              {isFiring ? <RotateCcw className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
-              <span>{isFiring ? 'Fire Again' : 'Simulate Cannon Fire'}</span>
-            </button>
           </div>
         </div>
       </div>

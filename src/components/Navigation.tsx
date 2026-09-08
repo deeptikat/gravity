@@ -27,8 +27,8 @@ export default function Navigation({ currentSection, scrollProgress, onNavigate 
     { id: 'question', label: 'II. Newton’s Question' },
     { id: 'moon', label: 'III. The Moon’s Fall' },
     { id: 'notebook', label: 'IV. The Notebook' },
-    { id: 'gravity-lab', label: 'V. Distance Lab' },
-    { id: 'mass-lab', label: 'VI. Mass Lab' },
+    { id: 'gravity-lab', label: 'V. Distance and Gravity' },
+    { id: 'mass-lab', label: 'VI. Mutual Attraction' },
     { id: 'cosmic', label: 'VII. Cosmic Law' },
     { id: 'timeline', label: 'VIII. Timeline' },
     { id: 'myth-note', label: 'IX. The Legend' },
@@ -37,10 +37,10 @@ export default function Navigation({ currentSection, scrollProgress, onNavigate 
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 pointer-events-none transition-all duration-300">
-      {/* Top golden progress indicator line */}
+      {/* Scroll progress indicator */}
       <div className="w-full h-1 bg-[#24211e]/10">
         <div
-          className="h-full bg-gradient-to-r from-[#B48325] via-[#D4AF37] to-[#8C6218] transition-all duration-150 ease-out"
+          className="h-full bg-[#102A43] transition-all duration-150 ease-out"
           style={{ width: `${Math.min(100, Math.max(0, scrollProgress * 100))}%` }}
         />
       </div>

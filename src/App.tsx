@@ -24,6 +24,8 @@ export default function App() {
   const [moonProgress, setMoonProgress] = useState<number>(0);
   const [notebookProgress, setNotebookProgress] = useState<number>(0);
   const [cosmicProgress, setCosmicProgress] = useState<number>(0);
+  const [distanceLabProgress, setDistanceLabProgress] = useState<number>(0);
+  const [massLabProgress, setMassLabProgress] = useState<number>(0);
 
   const tickingRef = useRef<boolean>(false);
 
@@ -55,6 +57,8 @@ export default function App() {
           setMoonProgress(getSectionProgress('moon'));
           setNotebookProgress(getSectionProgress('notebook'));
           setCosmicProgress(getSectionProgress('cosmic'));
+          setDistanceLabProgress(getSectionProgress('gravity-lab'));
+          setMassLabProgress(getSectionProgress('mass-lab'));
 
           // Detect active section for navigation
           const sectionIds = [
@@ -109,7 +113,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#F7F4EC] text-[#24211E] selection:bg-[#C59B27]/30 selection:text-[#1E1B18] overflow-x-hidden">
+    <div className="relative min-h-screen bg-white text-[#102A43] selection:bg-[#102A43]/20 selection:text-[#102A43] overflow-x-hidden">
       {/* Top Navigation */}
       <Navigation
         currentSection={currentSection}
@@ -144,10 +148,10 @@ export default function App() {
         <Section4Notebook scrollProgress={notebookProgress} />
 
         {/* Section 5: Interactive Gravity Lab (Distance & Inverse-Square) */}
-        <Section5GravityExperiment />
+        <Section5GravityExperiment scrollProgress={distanceLabProgress} />
 
         {/* Section 6: Interactive Mass Lab (Mutual Gravitational Pull) */}
-        <Section6MassExperiment />
+        <Section6MassExperiment scrollProgress={massLabProgress} />
 
         {/* Section 7: The Cosmic Scale (Planets to Universe) */}
         <Section7CosmicScale scrollProgress={cosmicProgress} />

@@ -1,7 +1,65 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { ArrowDown, Sparkles } from 'lucide-react';
-import { playAppleDropSound } from '../utils/audio';
+import { gsap } from 'gsap';
+
+function CursorAppleTrail({ enabled }: { enabled: boolean }) {
+  const trailRef = useRef<HTMLDivElement>(null);
+  const lastSpawnRef = useRef(0);
+
+  useLayoutEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      const trail = trailRef.current;
+      const now = performance.now();
+      if (!trail || !enabled || now - lastSpawnRef.current < 75) return;
+      lastSpawnRef.current = now;
+
+      const apple = document.createElement('span');
+      apple.textContent = '🍎';
+      apple.setAttribute('aria-hidden', 'true');
+      apple.style.position = 'absolute';
+      apple.style.left = '0';
+      apple.style.top = '0';
+      apple.style.fontSize = `${18 + Math.random() * 10}px`;
+      apple.style.filter = 'drop-shadow(0 4px 5px rgba(16, 42, 67, 0.2))';
+      trail.appendChild(apple);
+
+      gsap.fromTo(
+        apple,
+        { x: event.clientX - 12, y: event.clientY - 12, scale: 0.35, opacity: 0, rotation: -12 },
+        {
+          x: event.clientX - 12 + (Math.random() * 24 - 12),
+          y: event.clientY - 12 - 18,
+          scale: 1,
+          opacity: 1,
+          rotation: Math.random() * 24 - 12,
+          duration: 0.18,
+          ease: 'back.out(2)',
+          onComplete: () => {
+            gsap.to(apple, {
+              y: `+=${12 + Math.random() * 10}`,
+              scale: 0.7,
+              opacity: 0,
+              duration: 0.65,
+              delay: 0.18,
+              ease: 'power2.in',
+              onComplete: () => apple.remove(),
+            });
+          },
+        },
+      );
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+    };
+  }, [enabled]);
+
+  return (
+    <div ref={trailRef} className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" />
+  );
+}
 
 interface HeroSectionProps {
   scrollProgress: number; // 0 to 1 through hero zone
@@ -9,7 +67,6 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ scrollProgress, onScrollDown }: HeroSectionProps) {
-  const [nudged, setNudged] = useState(false);
 
   // Progressive scroll-based variables:
   // 0 -> 0.4: Hero visible, apple swaying on branch
@@ -21,29 +78,25 @@ export default function HeroSection({ scrollProgress, onScrollDown }: HeroSectio
   const cameraTranslateY = scrollProgress * -80;
 
   // Apple drop calculation (acceleration via quadratic curve)
-  const fallStart = 0.2;
-  const fallProgress = Math.min(1, Math.max(0, (scrollProgress - fallStart) / 0.5));
+  const fallStart = 0.08;
+  const fallProgress = Math.min(1, Math.max(0, (scrollProgress - fallStart) / 0.72));
   // Quadratic fall acceleration
-  const appleDropY = fallProgress * fallProgress * 320;
-  const appleRotation = fallProgress * 45;
+  // Keep the full fall visible inside the illustrated stage.
+  const appleDropY = fallProgress * fallProgress * 120;
+  const appleRotation = fallProgress * 75;
   const isFallen = fallProgress > 0.05;
-
-  const handleAppleClick = () => {
-    setNudged(true);
-    playAppleDropSound();
-    setTimeout(() => setNudged(false), 800);
-  };
 
   return (
     <section
       id="hero"
-      className="relative min-h-[140vh] w-full flex flex-col items-center justify-start pt-24 pb-20 overflow-hidden parchment-texture"
+      className="relative min-h-[125vh] w-full flex flex-col items-center justify-start pt-32 pb-20 overflow-hidden parchment-texture"
     >
       {/* Subtle historic archival background borders and watermark */}
       <div className="absolute inset-0 pointer-events-none border-[14px] border-[#EDE4D2]/60 mix-blend-multiply" />
-      <div className="absolute top-12 left-12 text-[#B48325]/10 font-heading text-8xl select-none pointer-events-none hidden md:block">
-        ANNO 1666
+      <div className="absolute top-12 left-12 text-[#102A43]/10 font-heading text-8xl select-none pointer-events-none hidden md:block">
+        NEWTON / 1666
       </div>
+      <CursorAppleTrail enabled={scrollProgress < 0.98} />
 
       {/* Hero Content Container with camera zoom transform */}
       <div
@@ -154,13 +207,11 @@ export default function HeroSection({ scrollProgress, onScrollDown }: HeroSectio
 
           {/* The Apple Element */}
           <div
-            className="absolute left-[242px] top-[188px] cursor-pointer group pointer-events-auto"
+            className="absolute left-1/2 top-[150px] z-30 group pointer-events-none"
             style={{
-              transform: `translate3d(0, ${appleDropY}px, 0) rotate(${appleRotation}deg)`,
+              transform: `translate3d(-50%, ${appleDropY}px, 0) rotate(${appleRotation}deg)`,
               transition: isFallen ? 'none' : 'transform 0.2s ease-out',
             }}
-            onClick={handleAppleClick}
-            title="Click to nudge Newton's apple"
           >
             {/* Apple Motion Trail when falling */}
             {fallProgress > 0.1 && (
@@ -173,18 +224,14 @@ export default function HeroSection({ scrollProgress, onScrollDown }: HeroSectio
             {/* Apple SVG Graphic */}
             <motion.div
               animate={
-                nudged
-                  ? { rotate: [0, -12, 10, -6, 0], y: [0, -3, 0] }
-                  : !isFallen
+                !isFallen
                   ? { rotate: [-2, 2, -2] }
                   : {}
               }
               transition={
-                nudged
-                  ? { duration: 0.6 }
-                  : { duration: 3.5, repeat: Infinity, ease: 'easeInOut' }
+                { duration: 3.5, repeat: Infinity, ease: 'easeInOut' }
               }
-              className="relative w-11 h-12 flex items-center justify-center filter drop-shadow-md"
+              className="relative w-16 h-[70px] flex items-center justify-center filter drop-shadow-lg"
             >
               <svg viewBox="0 0 44 48" className="w-full h-full">
                 {/* Stem */}
@@ -222,12 +269,6 @@ export default function HeroSection({ scrollProgress, onScrollDown }: HeroSectio
               </svg>
             </motion.div>
 
-            {/* Nudge hint badge if untouched */}
-            {!isFallen && !nudged && (
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-serif italic text-[#8C6218] bg-[#FAF7F0] px-2 py-0.5 rounded-full border border-[#DCD3C1]">
-                touch the apple
-              </div>
-            )}
           </div>
 
           {/* Reveal text: “Why did it fall down?” */}

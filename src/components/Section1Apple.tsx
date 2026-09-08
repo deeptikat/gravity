@@ -1,4 +1,7 @@
+import { useLayoutEffect, useRef } from 'react';
 import { motion } from 'motion/react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Eye, HelpCircle, Compass } from 'lucide-react';
 
 interface Section1AppleProps {
@@ -6,28 +9,41 @@ interface Section1AppleProps {
 }
 
 export default function Section1Apple({ scrollProgress }: Section1AppleProps) {
-  // Phase 1 (0 to 0.35): Apple completes fall & lands on the soft grass
-  // Phase 2 (0.25 to 0.65): Camera pans/zooms to ground; bench, book, quill & papers emerge
-  // Phase 3 (0.4 to 1.0): Progressive texts reveal
-  const appleDropProgress = Math.min(1, scrollProgress / 0.35);
-  // Realistic physical acceleration: y = 0.5 * g * t^2 with gentle bounce
-  const bounce = appleDropProgress > 0.85 ? Math.sin((appleDropProgress - 0.85) * Math.PI * 6) * -12 : 0;
-  const appleY = appleDropProgress * 280 + bounce;
-  const appleRotation = appleDropProgress * 75;
+  const sectionRef = useRef<HTMLElement>(null);
+  const appleRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
 
-  // Scene discovery: items fade in and shift upwards softly
-  const sceneItemsOpacity = Math.min(1, Math.max(0, (scrollProgress - 0.2) / 0.4));
-  const sceneItemsY = (1 - sceneItemsOpacity) * 40;
+  useLayoutEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const context = gsap.context(() => {
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 1.2,
+        },
+      });
+
+      timeline
+        .fromTo(appleRef.current, { xPercent: -50, y: 0, rotation: 0 }, { xPercent: -50, y: 350, rotation: 75, ease: 'power2.in' }, 0)
+        .fromTo(sceneRef.current, { opacity: 0, y: 40 }, { opacity: 1, y: 0, ease: 'power2.out' }, 0.14);
+    }, sectionRef);
+
+    return () => context.revert();
+  }, []);
 
   // Progressive text opacity levels
-  const text1Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.15) / 0.25));
-  const text2Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.4) / 0.25));
-  const text3Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.65) / 0.25));
+  const text1Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.12) / 0.2));
+  const text2Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.3) / 0.2));
+  const text3Opacity = Math.min(1, Math.max(0, (scrollProgress - 0.48) / 0.2));
 
   return (
     <section
+      ref={sectionRef}
       id="orchard"
-      className="relative min-h-[160vh] w-full bg-[#F4EFE4] text-[#24211E] overflow-hidden parchment-texture border-t border-[#E5DCcb]"
+      className="relative min-h-[125vh] w-full bg-[#F4EFE4] text-[#24211E] overflow-hidden parchment-texture border-t border-[#E5DCcb]"
     >
       {/* Sticky museum view container */}
       <div className="sticky top-0 h-screen w-full max-w-7xl mx-auto px-4 sm:px-8 flex flex-col justify-between py-16">
@@ -47,7 +63,7 @@ export default function Section1Apple({ scrollProgress }: Section1AppleProps) {
         </div>
 
         {/* The Illustrated Orchard Landscape Stage */}
-        <div className="relative w-full h-[400px] sm:h-[460px] my-auto flex items-center justify-center">
+        <div className="relative w-full h-[460px] sm:h-[520px] my-auto flex items-center justify-center">
           {/* Background Tree Foliage Silhouette */}
           <div className="absolute top-0 left-4 sm:left-16 w-80 h-64 pointer-events-none opacity-85">
             <svg viewBox="0 0 320 260" className="w-full h-full">
@@ -73,11 +89,8 @@ export default function Section1Apple({ scrollProgress }: Section1AppleProps) {
 
           {/* Foreground & Table/Bench Scene Elements (Emerges with scroll) */}
           <div
-            className="absolute inset-0 flex items-end justify-center transition-all duration-300"
-            style={{
-              opacity: sceneItemsOpacity,
-              transform: `translateY(${sceneItemsY}px)`,
-            }}
+            ref={sceneRef}
+            className="absolute inset-0 flex items-end justify-center"
           >
             {/* Wooden Garden Bench */}
             <div className="absolute left-[8%] sm:left-[18%] bottom-10 w-44 sm:w-60 h-28 pointer-events-none">
@@ -196,14 +209,11 @@ export default function Section1Apple({ scrollProgress }: Section1AppleProps) {
 
           {/* The Falling / Landed Apple */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 top-10 pointer-events-auto cursor-pointer"
-            style={{
-              transform: `translate3d(-50%, ${appleY}px, 0) rotate(${appleRotation}deg)`,
-              transition: 'transform 0.05s linear',
-            }}
+            ref={appleRef}
+            className="absolute left-1/2 top-10 pointer-events-none"
           >
             {/* Apple drop trail */}
-            {appleDropProgress < 0.95 && (
+            {scrollProgress < 0.95 && (
               <div
                 className="absolute left-1/2 -top-16 -translate-x-1/2 w-0.5 bg-gradient-to-t from-[#B48325]/60 to-transparent pointer-events-none"
                 style={{ height: '70px' }}
@@ -249,7 +259,7 @@ export default function Section1Apple({ scrollProgress }: Section1AppleProps) {
             </div>
 
             {/* Ground impact dust ripple upon landing */}
-            {appleDropProgress > 0.85 && (
+            {scrollProgress > 0.7 && (
               <motion.div
                 initial={{ scale: 0.5, opacity: 0.8 }}
                 animate={{ scale: 2, opacity: 0 }}
